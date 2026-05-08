@@ -66,11 +66,12 @@ npm start
 ## Funcionalidades
 
 **Consulta de CEP**
-- Ao sair do campo CEP (blur), a busca é disparada automaticamente
+- Busca disparada automaticamente utilizando debounce ao preencher o cep
 - A requisição passa pelo servidor Next.js, que consulta o Redis antes de chamar APIs externas
 - API primária: [ViaCEP](https://viacep.com.br/)
 - Fallback automático: [BrazilAPI](https://brasilapi.com.br/) — ativado somente se o ViaCEP falhar
 - Resultado cacheado no Redis por **1 dia** (TTL 86 400 s) e no cliente por 10 minutos via TanStack Query
+- CEP inválido exibe mensagem de erro amigável diretamente no campo e bloqueia o salvamento
 
 **Formulário**
 - Campos: CEP, Logradouro, Complemento, Bairro, Cidade e Estado
@@ -80,7 +81,7 @@ npm start
 
 **Ações**
 - **Limpar** — reseta todos os campos e o estado da consulta
-- **Salvar** — envia os dados para a API interna e os armazena em `data/addresses.json`
+- **Salvar** — persiste o endereço no Redis; bloqueado se o CEP não foi encontrado
 - **Detecção de duplicatas** — ao tentar salvar um CEP já cadastrado, exibe alerta com confirmação antes de prosseguir
 
 **Interface**
@@ -105,6 +106,8 @@ npm start
 - [x] Fallback para BrazilAPI quando ViaCEP falha
 - [x] TanStack Query para gerenciamento de estado assíncrono e cache
 - [x] Cache server-side com Redis (TTL 1 dia) via singleton ioredis
+- [x] Busca automática por debounce ao digitar o 8º dígito do CEP
+- [x] Validação de CEP inválido com bloqueio de salvamento e mensagem amigável
 - [x] Detecção e confirmação de endereços duplicados
 - [x] Responsividade para mobile
 - [x] Dark mode com persistência de preferência
