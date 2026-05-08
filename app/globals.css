@@ -5,6 +5,13 @@
   --font-sans: var(--font-geist-sans);
   --brand-green: #23A455;
   --brand-green-light: #61CE70;
+  --btn-clear-bg: #ffffff;
+  --btn-save-color: #ffffff;
+}
+
+.dark {
+  --btn-clear-bg: #1f2937;
+  --btn-save-color: #000000;
 }
 
 body {
@@ -16,4 +23,7 @@ body {
 *::before,
 *::after {
   box-sizing: border-box;
+  transition-property: color, background-color, border-color;
+  transition-timing-function: ease;
+  transition-duration: 300ms;
 }

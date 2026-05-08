@@ -48,7 +48,7 @@ function Field({ label, error, required, children }: FieldProps) {
 
 const inputClass =
   "w-full rounded-lg bg-white dark:bg-gray-800 px-3.5 py-2.5 text-sm text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 " +
-  "border focus:outline-none focus:ring-2 transition-all duration-200 " +
+  "border focus:outline-none focus:ring-2 transition-all duration-300 " +
   "disabled:opacity-60 disabled:cursor-not-allowed";
 
 const inputStyle = {
@@ -67,7 +67,6 @@ interface DuplicateState {
 
 export function AddressForm() {
   const { theme, toggle } = useTheme();
-  const isDark = theme === "dark";
 
   const [cepValue, setCepValue] = useState("");
   const [saveStatus, setSaveStatus] = useState<SaveStatus>("idle");
@@ -165,14 +164,14 @@ export function AddressForm() {
   }
 
   return (
-    <div
-      className="min-h-screen flex items-center justify-center p-4 sm:p-6"
-      style={{
-        background: isDark
-          ? `linear-gradient(to right, #000000 58%, ${BRAND} 58%)`
-          : `linear-gradient(to right, #ffffff 58%, ${BRAND} 58%)`,
-      }}
-    >
+    <div className="min-h-screen relative">
+      {/* Split background — both panels controlled by the same .dark class */}
+      <div className="absolute inset-0 flex pointer-events-none" aria-hidden="true">
+        <div className="w-[58%] bg-white dark:bg-black transition-colors duration-300" />
+        <div className="w-[42%]" style={{ backgroundColor: BRAND }} />
+      </div>
+
+      <div className="relative min-h-screen flex items-center justify-center p-4 sm:p-6">
       <div className="w-full max-w-xl">
         {/* Card */}
         <div
@@ -184,9 +183,9 @@ export function AddressForm() {
             onClick={toggle}
             className="absolute top-3 right-3 p-2 rounded-full transition-colors duration-200"
             style={{ backgroundColor: `${BRAND}25`, color: BRAND }}
-            aria-label={isDark ? "Alternar para modo claro" : "Alternar para modo escuro"}
+            aria-label={theme === "dark" ? "Alternar para modo claro" : "Alternar para modo escuro"}
           >
-            {isDark ? (
+            {theme === "dark" ? (
               <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
                 <path fillRule="evenodd" d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" clipRule="evenodd" />
               </svg>
@@ -367,10 +366,10 @@ export function AddressForm() {
                 style={{
                   borderColor: BRAND,
                   color: BRAND,
-                  backgroundColor: isDark ? "#1f2937" : "white",
+                  backgroundColor: "var(--btn-clear-bg)",
                 }}
                 onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = `${BRAND}15`)}
-                onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = isDark ? "#1f2937" : "white")}
+                onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "var(--btn-clear-bg)")}
               >
                 LIMPAR
               </button>
@@ -388,7 +387,7 @@ export function AddressForm() {
                   flex items-center justify-center gap-2 uppercase tracking-wide"
                 style={{
                   backgroundColor: BRAND,
-                  color: isDark ? "#000000" : "#ffffff",
+                  color: "var(--btn-save-color)",
                   ["--tw-ring-color" as string]: BRAND,
                 }}
                 onMouseEnter={(e) => { if (!e.currentTarget.disabled) e.currentTarget.style.opacity = "0.87"; }}
@@ -416,6 +415,7 @@ export function AddressForm() {
           ViaCEP · BrazilAPI (fallback)
         </p>
       </div>
+    </div>
     </div>
   );
 }

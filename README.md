@@ -2,6 +2,16 @@
 
 > Formulário de consulta e cadastro de endereço por CEP, construído com Next.js 16, TypeScript e Tailwind CSS.
 
+🔗 **Deploy:** [test-super-cep.vercel.app](https://test-super-cep.vercel.app/)
+
+---
+
+## Preview
+
+| Light Mode | Dark Mode |
+|:---:|:---:|
+| ![Light Mode](./docs/light.png) | ![Dark Mode](./docs/dark.png) |
+
 ---
 
 ## Tecnologias
