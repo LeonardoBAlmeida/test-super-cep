@@ -1,33 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
-import { promises as fs } from "fs";
-import path from "path";
 import { addressSchema } from "@/lib/validation";
+import { redis } from "@/lib/redis";
 
-const DATA_FILE = path.join(process.cwd(), "data", "addresses.json");
-
-interface SavedAddress {
-  cep: string;
-  savedAt: string;
-  [key: string]: unknown;
-}
-
-async function readAddresses(): Promise<SavedAddress[]> {
-  try {
-    const content = await fs.readFile(DATA_FILE, "utf-8");
-    return JSON.parse(content);
-  } catch {
-    return [];
-  }
-}
+const ADDRESSES_KEY = "addresses";
+const SAVED_CEPS_KEY = "saved_ceps";
 
 export async function GET(request: NextRequest) {
   const cep = request.nextUrl.searchParams.get("cep")?.replace(/\D/g, "");
   if (!cep) return NextResponse.json({ exists: false });
 
-  const addresses = await readAddresses();
-  const exists = addresses.some((a) => a.cep.replace(/\D/g, "") === cep);
-
-  return NextResponse.json({ exists });
+  const exists = await redis.sismember(SAVED_CEPS_KEY, cep);
+  return NextResponse.json({ exists: exists === 1 });
 }
 
 export async function POST(request: NextRequest) {
@@ -39,13 +22,15 @@ export async function POST(request: NextRequest) {
       stripUnknown: true,
     });
 
-    const addresses = await readAddresses();
-    addresses.push({ ...validated, savedAt: new Date().toISOString() });
+    const cepDigits = validated.cep.replace(/\D/g, "");
+    const entry = { ...validated, savedAt: new Date().toISOString() };
 
-    await fs.mkdir(path.dirname(DATA_FILE), { recursive: true });
-    await fs.writeFile(DATA_FILE, JSON.stringify(addresses, null, 2), "utf-8");
+    await Promise.all([
+      redis.lpush(ADDRESSES_KEY, JSON.stringify(entry)),
+      redis.sadd(SAVED_CEPS_KEY, cepDigits),
+    ]);
 
-    return NextResponse.json({ ok: true }, { status: 200 });
+    return NextResponse.json({ ok: true });
   } catch (err: unknown) {
     const message =
       err instanceof Error ? err.message : "Erro ao processar requisição";
