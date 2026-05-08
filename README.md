@@ -24,6 +24,7 @@
 | Formulários | React Hook Form 7 + @hookform/resolvers |
 | Validação | Yup 1 |
 | Requisições assíncronas | TanStack Query 5 |
+| Cache server-side | Redis (ioredis) |
 | HTTP | Axios |
 
 ---
@@ -36,7 +37,11 @@
 # 1. Instale as dependências
 npm install
 
-# 2. Inicie o servidor de desenvolvimento
+# 2. Configure as variáveis de ambiente
+cp .env.local.example .env.local
+# edite .env.local e preencha REDIS_URL
+
+# 3. Inicie o servidor de desenvolvimento
 npm run dev
 ```
 
@@ -48,15 +53,24 @@ npm run build
 npm start
 ```
 
+### Variáveis de ambiente
+
+| Variável | Descrição |
+|---|---|
+| `REDIS_URL` | String de conexão Redis — ex: `redis://:senha@host:porta` |
+
+> No Vercel, adicione `REDIS_URL` em **Settings → Environment Variables** antes do deploy.
+
 ---
 
 ## Funcionalidades
 
 **Consulta de CEP**
 - Ao sair do campo CEP (blur), a busca é disparada automaticamente
+- A requisição passa pelo servidor Next.js, que consulta o Redis antes de chamar APIs externas
 - API primária: [ViaCEP](https://viacep.com.br/)
 - Fallback automático: [BrazilAPI](https://brasilapi.com.br/) — ativado somente se o ViaCEP falhar
-- Resultados em cache por 10 minutos via TanStack Query
+- Resultado cacheado no Redis por **1 dia** (TTL 86 400 s) e no cliente por 10 minutos via TanStack Query
 
 **Formulário**
 - Campos: CEP, Logradouro, Complemento, Bairro, Cidade e Estado
@@ -90,6 +104,7 @@ npm start
 - [x] React Hook Form + @hookform/resolvers
 - [x] Fallback para BrazilAPI quando ViaCEP falha
 - [x] TanStack Query para gerenciamento de estado assíncrono e cache
+- [x] Cache server-side com Redis (TTL 1 dia) via singleton ioredis
 - [x] Detecção e confirmação de endereços duplicados
 - [x] Responsividade para mobile
 - [x] Dark mode com persistência de preferência
