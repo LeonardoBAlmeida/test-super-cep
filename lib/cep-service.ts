@@ -50,6 +50,10 @@ export async function fetchAddressByCep(rawCep: string): Promise<Address> {
   try {
     return await fetchFromViaCep(cep);
   } catch {
-    return await fetchFromBrazilApi(cep);
+    try {
+      return await fetchFromBrazilApi(cep);
+    } catch {
+      throw new Error("CEP não encontrado");
+    }
   }
 }

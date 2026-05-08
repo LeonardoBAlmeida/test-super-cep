@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useCep } from "@/hooks/useCep";
@@ -69,6 +69,7 @@ export function AddressForm() {
   const { theme, toggle } = useTheme();
 
   const [cepValue, setCepValue] = useState("");
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [saveStatus, setSaveStatus] = useState<SaveStatus>("idle");
   const [duplicate, setDuplicate] = useState<DuplicateState>({
     show: false,
@@ -82,7 +83,7 @@ export function AddressForm() {
     handleSubmit,
     setValue,
     reset,
-    watch,
+    setError,
     formState: { errors, isSubmitting },
   } = useForm<AddressFormData>({
     resolver: yupResolver(addressSchema),
@@ -113,11 +114,16 @@ export function AddressForm() {
     setValue("cep", formatted, { shouldValidate: false });
     e.target.value = formatted;
     setDuplicate({ show: false, cep: "", confirmed: false, pendingData: null });
-  }
 
-  function handleCepBlur() {
-    const digits = watch("cep").replace(/\D/g, "");
-    if (digits.length === 8) setCepValue(digits);
+    const digits = formatted.replace(/\D/g, "");
+
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+
+    if (digits.length === 8) {
+      debounceRef.current = setTimeout(() => setCepValue(digits), 300);
+    } else {
+      setCepValue("");
+    }
   }
 
   function handleClear() {
@@ -146,6 +152,11 @@ export function AddressForm() {
   }
 
   async function onSubmit(data: AddressFormData) {
+    if (isError) {
+      setError("cep", { message: "" });
+      return;
+    }
+
     if (duplicate.show) {
       if (duplicate.confirmed) await persistAddress(data);
       return;
@@ -215,7 +226,6 @@ export function AddressForm() {
                     inputMode="numeric"
                     maxLength={9}
                     onChange={handleCepChange}
-                    onBlur={handleCepBlur}
                     className={inputClass}
                     style={inputStyle}
                   />
