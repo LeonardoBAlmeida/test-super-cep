@@ -39,7 +39,7 @@ npm install
 
 # 2. Configure as variáveis de ambiente
 cp .env.local.example .env.local
-# edite .env.local e preencha REDIS_URL
+# edite .env.local e REDIS_URL deve permanecer nulo
 
 # 3. Inicie o servidor de desenvolvimento
 npm run dev
@@ -81,7 +81,8 @@ npm start
 
 **Ações**
 - **Limpar** — reseta todos os campos e o estado da consulta
-- **Salvar** — persiste o endereço no Redis; bloqueado se o CEP não foi encontrado
+- **Salvar PROD** — persiste o endereço no Redis; 
+- **Salvar LOCAL** — envia os dados para a API interna e os armazena em `data/addresses.json`
 - **Detecção de duplicatas** — ao tentar salvar um CEP já cadastrado, exibe alerta com confirmação antes de prosseguir
 
 **Interface**

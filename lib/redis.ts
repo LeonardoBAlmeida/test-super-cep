@@ -2,20 +2,22 @@ import Redis from "ioredis";
 
 declare global {
   // eslint-disable-next-line no-var
-  var _redis: Redis | undefined;
+  var _redis: Redis | null | undefined;
 }
 
-function createClient(): Redis {
+function createClient(): Redis | null {
   const url = process.env.REDIS_URL;
-  if (!url) throw new Error("REDIS_URL environment variable is not set");
+  if (!url) return null;
 
   const client = new Redis(url, { lazyConnect: false, maxRetriesPerRequest: 2 });
   client.on("error", (err) => console.error("[Redis]", err.message));
   return client;
 }
 
-// Reuse connection across hot-reloads in dev; each container in prod keeps one instance
-const redis = globalThis._redis ?? createClient();
-if (process.env.NODE_ENV !== "production") globalThis._redis = redis;
+if (globalThis._redis === undefined) {
+  globalThis._redis = createClient();
+}
 
-export { redis };
+// null  → REDIS_URL not set (dev / local without Redis)
+// Redis → connected instance (production)
+export const redis = globalThis._redis as Redis | null;

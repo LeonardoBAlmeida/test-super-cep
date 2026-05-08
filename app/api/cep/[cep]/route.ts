@@ -17,23 +17,26 @@ export async function GET(
 
   const key = `cep:${sanitized}`;
 
-  // Cache read — failures are non-fatal
-  try {
-    const hit = await redis.get(key);
-    if (hit) return NextResponse.json(JSON.parse(hit));
-  } catch (err) {
-    console.warn("[Redis] cache read failed:", (err as Error).message);
+  // Redis cache — production only (redis is null in dev)
+  if (redis) {
+    try {
+      const hit = await redis.get(key);
+      if (hit) return NextResponse.json(JSON.parse(hit));
+    } catch (err) {
+      console.warn("[Redis] cache read failed:", (err as Error).message);
+    }
   }
 
   // Fetch from ViaCEP / BrazilAPI
   try {
     const address = await fetchAddressByCep(sanitized);
 
-    // Cache write — failures are non-fatal
-    try {
-      await redis.setex(key, CACHE_TTL, JSON.stringify(address));
-    } catch (err) {
-      console.warn("[Redis] cache write failed:", (err as Error).message);
+    if (redis) {
+      try {
+        await redis.setex(key, CACHE_TTL, JSON.stringify(address));
+      } catch (err) {
+        console.warn("[Redis] cache write failed:", (err as Error).message);
+      }
     }
 
     return NextResponse.json(address);
